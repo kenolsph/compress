@@ -12,7 +12,7 @@ void compressFile(const char *inputFile, const char *outputFile)
 		return;
 	}
 
-	FILE *output = fopen(outputFile, "w");
+	FILE *output = fopen(outputFile, "wb");
 
 	if	(output == NULL)
 	{
@@ -21,11 +21,13 @@ void compressFile(const char *inputFile, const char *outputFile)
 		return;
 	}
 
+	/* File Header */ 
+	fwrite("CMP1", 1, 4, output);
+
 	int previous = fgetc(input);
 
 	if (previous == EOF)
 	{
-		printf("Input file is empty.\n");
 		fclose(input);
 		fclose(output);
 		return;
@@ -34,21 +36,29 @@ void compressFile(const char *inputFile, const char *outputFile)
 	int current;
 	int count = 1;
 
-	while	(fread(&current, 1, 1, input) == 1)
+	while	((current = fgetc(input)) != EOF)
 	{
-		if	(current == previous)
+		if (current == previous && count < 255)
 		{
 			count++;
 		}
 		else
 		{
-			fprintf(output, "%c%d", previous, count);
+			unsigned char letter = (unsigned char)previous;
+			unsigned char run = (unsigned char)count;
+
+			fwrite(&letter, 1, 1, output);
+			fwrite(&run, 1, 1, output);
 
 			previous = current;
 			count = 1;
 		}
 	}
-	fprintf(output, "%c%d", previous, count);
+	unsigned char letter = (unsigned char)previous;
+	unsigned char run = (unsigned char)count;
+
+	fwrite(&letter, 1, 1, output);
+	fwrite(&run, 1, 1, output);
 
 	fclose(input);
 	fclose(output);
