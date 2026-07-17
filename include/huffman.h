@@ -18,6 +18,9 @@ typedef struct
 
 } PriorityQueue;
 
+extern char *huffmanCodes[256];
+
+
 void calculateFrequency(const char *filename, unsigned long frequency[256]);
 void buildFrequencyTable(const char *filename);
 HuffmanNode *createNode(unsigned char byte, unsigned long frequency);
@@ -32,5 +35,7 @@ HuffmanNode *buildHuffmanTree(PriorityQueue *queue);
 void printHuffmanTree(HuffmanNode *root, int depth);
 void generateCodes(HuffmanNode *root, char code[], int depth);
 void testHuffman(const char *filename);
+void encodeFile(const char *inputfile, const char *outputFile);
+void buildCodes(const char *filename);
 
 #endif

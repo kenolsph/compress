@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 
 #include "../include/huffman.h"
+
+char *huffmanCodes[256] = {0};
 
 void calculateFrequency(const char *filename, unsigned long frequency[256])
 {
@@ -195,6 +198,13 @@ void generateCodes(HuffmanNode *root, char code[], int depth)
 	{
 		code[depth] = '\0';
 
+		huffmanCodes[root->byte] = malloc(strlen(code) + 1);
+
+		if (huffmanCodes[root->byte] != NULL)
+		{
+			strcpy(huffmanCodes[root->byte], code);
+		}
+
 		if (root->byte >= 32 && root->byte <= 126)
 		{
 			printf("'%c' : %s\n", root->byte, code);
@@ -225,10 +235,35 @@ void testHuffman(const char *filename)
 
 	HuffmanNode *root = buildHuffmanTree(queue);
 
+	if (root == NULL)
+	{
+		printf("Failed to build Huffman tree.\n");
+		return;
+	}
+
 	char code[256];
 
-	printf("\nHuffman Codes\n");
-	printf("------------------------\n");
+	printf("\n========================\n");
+	printf("       Huffman Codes\n");
+	printf("=======================\n");
+
+	generateCodes(root, code, 0);
+
+	printf("==========================\n");
+}
+
+void buildCodes(const char *filename)
+{
+	PriorityQueue *queue = buildPriorityQueue(filename);
+
+	if (queue == NULL)
+	{
+		return;
+	}
+
+	HuffmanNode *root = buildHuffmanTree(queue);
+
+	char code[256];
 
 	generateCodes(root, code, 0);
 }
