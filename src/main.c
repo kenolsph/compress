@@ -3,10 +3,11 @@
 
 #include "../include/compress.h"
 #include "../include/decompress.h"
+#include "../include/huffman.h"
 
 int main(int argc, char *argv[])
 {
-	if (argc !=4)
+	if (argc < 3)
 	{
 		printf("=======================================\n");
 		printf("         Compression Tool\n");
@@ -33,6 +34,14 @@ int main(int argc, char *argv[])
 		decompressFile(argv[2], argv[3]);
 
 		printf("Decompression complete. \n");
+	}
+	else if (strcmp(argv[1], "frequency") == 0)
+	{
+		buildFrequencyTable(argv[2]);
+	}
+	else if (strcmp(argv[1], "huffman") == 0)
+	{
+		testHuffman(argv[2]);
 	}
 	else
 	{

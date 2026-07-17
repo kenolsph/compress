@@ -4,7 +4,8 @@ CFLAGS = -Wall -Iinclude
 SRC = src/main.c \
       src/compress.c \
       src/decompress.c \
-      src/fileio.c
+      src/fileio.c \
+      src/huffman.c
 
 OBJ = $(SRC:.c=.o)
 
