@@ -30,7 +30,10 @@ void enqueue (PriorityQueue *queue, HuffmanNode *node);
 HuffmanNode *dequeue(PriorityQueue *queue);
 
 PriorityQueue *buildPriorityQueue(const char *filename);
+PriorityQueue *buildPriorityQueueFromFrequency(unsigned long frequency[256]);
 HuffmanNode *buildHuffmanTree(PriorityQueue *queue);
+void freeHuffmanTree(HuffmanNode *root);
+void freeHuffmanCodes(void);
 
 void printHuffmanTree(HuffmanNode *root, int depth);
 void generateCodes(HuffmanNode *root, char code[], int depth);

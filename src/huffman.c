@@ -132,6 +132,54 @@ PriorityQueue *buildPriorityQueue(const char *filename)
 	return queue;
 }
 
+PriorityQueue *buildPriorityQueueFromFrequency(unsigned long frequency[256])
+{
+	PriorityQueue *queue = (PriorityQueue *)malloc(sizeof(PriorityQueue));
+
+	if (queue == NULL)
+	{
+		printf("Memory allocation failed.\n");
+		return NULL;
+	}
+
+	initializeQueue(queue);
+
+	for (int i = 0; i < 256; i++)
+	{
+		if (frequency[i] > 0)
+		{
+			HuffmanNode *node = createNode((unsigned char)i, frequency[i]);
+			enqueue(queue, node);
+		}
+	}
+
+	return queue;
+}
+
+void freeHuffmanTree(HuffmanNode *root)
+{
+	if (root == NULL)
+	{
+		return;
+	}
+
+	freeHuffmanTree(root->left);
+	freeHuffmanTree(root->right);
+	free(root);
+}
+
+void freeHuffmanCodes(void)
+{
+	for (int i = 0; i < 256; i++)
+	{
+		if (huffmanCodes[i] != NULL)
+		{
+			free(huffmanCodes[i]);
+			huffmanCodes[i] = NULL;
+		}
+	}
+}
+
 HuffmanNode *buildHuffmanTree(PriorityQueue *queue)
 {
 	while (queue->size >1)
