@@ -1,40 +1,35 @@
 # compression_tool
 
-A command-line file compressor written in C, using Huffman coding.
+A command-line file compressor written in C.
 
 ## Build
 
     make
 
-This produces the `compression_tool` binary. It needs only `gcc` (or `clang`) and `make`.
+Needs only `gcc` (or `clang`) and `make`.
 
 ## Usage
 
     ./compression_tool compress <input_file> <output_file>
     ./compression_tool decompress <input_file> <output_file>
 
-## Example
-
-    ./compression_tool compress notes.txt notes.cmp
-    ./compression_tool decompress notes.cmp notes.restored
-
-On a sample text file, 11133 bytes compressed to 20724 bytes (-86% smaller), and decompressing gave back an identical file.
-
 ## How it works
 
-1. Count how often each byte value appears in the input.
-2. Build a Huffman tree from those frequencies, so common bytes get short codes.
-3. Write a small binary header holding the frequency data, then the encoded bits.
-4. Decompression reads the header, rebuilds the same tree, and decodes the bits back into bytes.
+The current version uses run-length encoding (RLE). Each run of identical bytes
+is stored as the byte followed by a count (up to 255), after a 4-byte `CMP1`
+header. Decompression reads the header and expands each run back out.
+
+RLE only helps on data with long runs of repeated bytes. On ordinary text or
+already-compressed files such as JPEG, the output can be larger than the input.
+
+## Roadmap
+
+- Huffman coding: frequency counting and tree construction are written
+  (`frequency` and `huffman` test commands); wiring them into `compress` and
+  `decompress` is in progress.
 
 ## Project layout
 
-    src/       main, compress, decompress, fileio, huffman, bitio
-    include/   headers for each module
-    test-files sample inputs
-
-## Install (optional)
-
-    sudo make install
-
-Installs to `/usr/local/bin`. Change the location with `make install PREFIX=$HOME/.local`.
+    src/        main, compress, decompress, fileio, huffman, bitio
+    include/    headers for each module
+    test-files/ sample inputs
