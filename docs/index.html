@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>compression_tool</title>
+<style>
+  body { background:#0d0e0f; color:#d4be98; font:14px/1.6 ui-monospace,Menlo,Consolas,monospace; margin:0; padding:48px 24px; }
+  main { max-width:640px; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  p { color:#7c6f64; margin:0 0 24px; }
+  input[type=file] { display:block; margin-bottom:16px; color:#d4be98; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  button, a.dl { font:inherit; color:#8fc493; background:none; border:1px solid #252729; border-radius:3px; padding:6px 14px; cursor:pointer; text-decoration:none; }
+  button:hover, a.dl:hover { border-color:#8fc493; }
+  pre { border:1px solid #252729; padding:14px; min-height:96px; white-space:pre-wrap; color:#7c6f64; margin-top:20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>compression_tool</h1>
+  <p>Huffman compression written in C, compiled to WebAssembly. Your file never leaves your browser.</p>
+  <input type="file" id="f" />
+  <div class="row">
+    <button id="c" type="button">compress</button>
+    <button id="d" type="button">decompress</button>
+    <a class="dl" id="dl" hidden>download</a>
+  </div>
+  <pre id="log">pick a file to start.</pre>
+</main>
+<script src="compression_tool.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const log = $("log");
+  const say = (t) => { log.textContent += t + "\n"; };
+
+  async function run(mode) {
+    const file = $("f").files[0];
+    if (!file) { log.textContent = "choose a file first."; return; }
+    log.textContent = "";
+    $("dl").hidden = true;
+
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const m = await createTool({ print: say, printErr: say });
+    m.FS.writeFile("in.bin", bytes);
+
+    try { m.callMain([mode, "in.bin", "out.bin"]); }
+    catch (e) { say("error: " + e); return; }
+
+    let out;
+    try { out = m.FS.readFile("out.bin"); }
+    catch (e) { say("no output file was produced."); return; }
+
+    const pct = mode === "compress" && bytes.length
+      ? Math.round((1 - out.length / bytes.length) * 100) : null;
+    say(mode + ": " + bytes.length + " -> " + out.length + " bytes" +
+        (pct !== null ? " (" + pct + "% smaller)" : ""));
+
+    const dl = $("dl");
+    dl.href = URL.createObjectURL(new Blob([out]));
+    dl.download = mode === "compress"
+      ? file.name + ".cmp"
+      : file.name.replace(/\.cmp$/, "") + ".restored";
+    dl.textContent = "download " + dl.download;
+    dl.hidden = false;
+  }
+
+  $("c").onclick = () => run("compress");
+  $("d").onclick = () => run("decompress");
+</script>
+</body>
+</html>

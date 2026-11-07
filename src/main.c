@@ -23,7 +23,8 @@ int main(int argc, char *argv[])
 	{
 		printf("Compressing \"%s\"...\n", argv[2]);
 
-		compressFile(argv[2], argv[3]);
+		if (compressFile(argv[2], argv[3]) != 0)
+			return 1;
 
 		printf("Compression complete.\n");
 	}
@@ -31,9 +32,10 @@ int main(int argc, char *argv[])
 	{
 		printf("Decompressing \"%s\"...\n", argv[2]);
 
-		decompressFile(argv[2], argv[3]);
+		if (decompressFile(argv[2], argv[3]) != 0)
+			return 1;
 
-		printf("Decompression complete. \n");
+		printf("Decompression complete.\n");
 	}
 	else if (strcmp(argv[1], "frequency") == 0)
 	{

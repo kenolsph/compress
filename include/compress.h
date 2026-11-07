@@ -1,6 +1,7 @@
 #ifndef COMPRESS_H
 #define COMPRESS_H
 
-void compressFile(const char *inputFile, const char *outputFile);
+/* Compress inputFile into outputFile. Returns 0 on success, 1 on error. */
+int compressFile(const char *inputFile, const char *outputFile);
 
 #endif
