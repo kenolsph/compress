@@ -1,0 +1,19 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: make
+      - run: mv compression_tool compression_tool-${{ runner.os }}
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: compression_tool-${{ runner.os }}
