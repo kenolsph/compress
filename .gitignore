@@ -1,0 +1,3 @@
+*.o
+compression_tool
+.DS_Store

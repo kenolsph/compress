@@ -1,20 +1,26 @@
-CC = gcc
-CFLAGS = -Wall -Iinclude
+CC      = gcc
+CFLAGS ?= -O2
+CFLAGS += -Wall -Wextra -Iinclude
+PREFIX ?= /usr/local
 
-SRC = src/main.c \
-      src/compress.c \
-      src/decompress.c \
-      src/fileio.c \
-      src/huffman.c \
-      src/bitio.c
+TARGET  = compression_tool
+SRC     = $(wildcard src/*.c)
+OBJ     = $(SRC:.c=.o)
+DEPS    = $(wildcard include/*.h)
 
-OBJ = $(SRC:.c=.o)
+all: $(TARGET)
 
-compression_tool: $(OBJ)
-	$(CC) $(OBJ) -o compression_tool
+$(TARGET): $(OBJ)
+	$(CC) $(OBJ) -o $@
 
-%.o: %.c
+%.o: %.c $(DEPS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+install: $(TARGET)
+	install -d $(DESTDIR)$(PREFIX)/bin
+	install -m 755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/
+
 clean:
-	rm -f $(OBJ) compression-tool
+	rm -f $(OBJ) $(TARGET)
+
+.PHONY: all install clean
