@@ -26,13 +26,24 @@
     <button id="d" type="button">decompress</button>
     <a class="dl" id="dl" hidden>download</a>
   </div>
-  <pre id="log">pick a file to start.</pre>
+  <pre id="log">pick a text file and click compress. to decompress, pick the .cmp file you downloaded.</pre>
 </main>
 <script src="compression_tool.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   const log = $("log");
   const say = (t) => { log.textContent += t + "\n"; };
+
+  // run one operation in a fresh copy of the C program
+  async function runTool(mode, bytes) {
+    const errs = [];
+    const m = await createTool({ print: () => {}, printErr: (t) => errs.push(t) });
+    m.FS.writeFile("in.bin", bytes);
+    try { m.callMain([mode, "in.bin", "out.bin"]); } catch (e) {}
+    let out = null;
+    try { out = m.FS.readFile("out.bin"); } catch (e) {}
+    return { out, errs };
+  }
 
   async function run(mode) {
     const file = $("f").files[0];
@@ -41,20 +52,31 @@
     $("dl").hidden = true;
 
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const m = await createTool({ print: say, printErr: say });
-    m.FS.writeFile("in.bin", bytes);
+    const head = String.fromCharCode(...bytes.slice(0, 4)).replace(/[^\x20-\x7e]/g, ".");
+    say("input: " + file.name + " (" + bytes.length + " bytes, starts with \"" + head + "\")");
 
-    try { m.callMain([mode, "in.bin", "out.bin"]); }
-    catch (e) { say("error: " + e); return; }
+    if (mode === "decompress" && head !== "CMP2") {
+      say("this file wasn't made by compress, so it can't be decompressed.");
+      say("pick the .cmp file you downloaded after clicking compress.");
+      return;
+    }
 
-    let out;
-    try { out = m.FS.readFile("out.bin"); }
-    catch (e) { say("no output file was produced."); return; }
+    const { out, errs } = await runTool(mode, bytes);
+    if (!out) { errs.forEach(say); say("no output was produced."); return; }
 
     const pct = mode === "compress" && bytes.length
       ? Math.round((1 - out.length / bytes.length) * 100) : null;
     say(mode + ": " + bytes.length + " -> " + out.length + " bytes" +
         (pct !== null ? " (" + pct + "% smaller)" : ""));
+
+    if (mode === "compress") {
+      const back = (await runTool("decompress", out)).out;
+      const same = back && back.length === bytes.length && back.every((v, i) => v === bytes[i]);
+      say(same
+        ? "verified: decompressing the result gives back your original file."
+        : "WARNING: the round trip did not match.");
+      if (pct !== null && pct <= 0) say("note: already-compressed files (jpg, png, zip) can't shrink. try a text file.");
+    }
 
     const dl = $("dl");
     dl.href = URL.createObjectURL(new Blob([out]));
