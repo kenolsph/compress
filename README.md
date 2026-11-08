@@ -2,7 +2,7 @@
 
 A command-line file compressor written in C, using Huffman coding.
 
-## Build
+## Build 
 
     make
 
